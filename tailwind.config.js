@@ -3,6 +3,7 @@ module.exports = {
   darkMode: "class",
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/style/**/*.{css}" // ✅ Asegura que Tailwind lea los estilos globales
   ],
   theme: {
     extend: {

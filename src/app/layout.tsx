@@ -1,6 +1,5 @@
+import "../style/global.css"; // ✅ Importa Tailwind desde el archivo correcto
 import { DM_Sans } from "next/font/google";
-import "../style/global.css"; // ✅ Solo este
-
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import { ThemeProvider } from "next-themes";
@@ -16,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${font.className}`}>
+      <body className={font.className}>
         <ThemeProvider attribute="class" enableSystem defaultTheme="system">
           <Aoscompo>
             <Header />
@@ -29,4 +28,3 @@ export default function RootLayout({
     </html>
   );
 }
-
