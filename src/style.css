@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fondo general del sitio con degradado oscuro */
+html,
+body {
+  background: linear-gradient(to bottom, #0e1014, #000510); /* de gris oscuro a negro */
+  font-family: 'DM Sans', sans-serif;
+  scroll-behavior: smooth;
+}
