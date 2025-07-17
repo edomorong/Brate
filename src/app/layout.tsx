@@ -5,7 +5,8 @@ import Footer from "@/components/Layout/Footer";
 import { ThemeProvider } from "next-themes";
 import ScrollToTop from "@/components/ScrollToTop";
 import Aoscompo from "@/utils/aos";
-import "@/style/style.css";
+import "../style/style.css"; // ← Ruta corregida
+
 const font = DM_Sans({ subsets: ["latin"] });
 
 export default function RootLayout({
