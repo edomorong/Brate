@@ -1,11 +1,11 @@
 import { DM_Sans } from "next/font/google";
-import "./globals.css";
+import "../style/global.css"; // ✅ Solo este
+
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import { ThemeProvider } from "next-themes";
 import ScrollToTop from "@/components/ScrollToTop";
 import Aoscompo from "@/utils/aos";
-import "../style/style.css"; // ✅ CORRECTO: desde app -> sube a src -> entra en style
 
 const font = DM_Sans({ subsets: ["latin"] });
 
@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${font.className}`}>
-        <ThemeProvider attribute="class" enableSystem={true} defaultTheme="system">
+        <ThemeProvider attribute="class" enableSystem defaultTheme="system">
           <Aoscompo>
             <Header />
             {children}
@@ -29,3 +29,4 @@ export default function RootLayout({
     </html>
   );
 }
+
