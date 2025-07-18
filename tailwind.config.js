@@ -2,14 +2,13 @@
 module.exports = {
   darkMode: "class",
   content: [
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/style/**/*.{css}" // ✅ Asegura que Tailwind lea los estilos globales
+    "./src/**/*.{js,ts,jsx,tsx,mdx}", // ✅ Cubre todos los archivos de tu app
   ],
   theme: {
     extend: {
       maxWidth: {
         'screen-xl': '75rem',
-        'screen-2xl': '83.75rem'
+        'screen-2xl': '83.75rem',
       },
       boxShadow: {
         'cause-shadow': '0px 4px 17px 0px #00000008',
@@ -25,23 +24,23 @@ module.exports = {
         '80%': '80%',
         8.5: '8.5rem',
         50: '50rem',
-        51: "54.375rem",
+        51: '54.375rem',
         25: '35.625rem',
         29: '28rem',
         120: '120rem',
         45: '45rem',
         94: '22.5rem',
         85: '21rem',
-        3.75: '3.75rem'
+        3.75: '3.75rem',
       },
       inset: {
         '5%': '5%',
-        '35%': '35%'
+        '35%': '35%',
       },
       zIndex: {
         '1': '1',
         '2': '2',
-        '999': '999'
+        '999': '999',
       },
       colors: {
         primary: "#99E39E",
@@ -87,11 +86,15 @@ module.exports = {
       backgroundImage: {
         "start": "url('/images/work/bg-start.png')",
         "perk": "url('/images/perks/perk-bg.png')",
+        // ✅ Degradado restaurado:
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-to-r': 'linear-gradient(to right, #1DC8CD, #99E39E)',
+        'hero': 'linear-gradient(to right, #1DC8CD, #99E39E)',
       },
       blur: {
         220: '220px',
         400: '400px',
-      }
+      },
     },
   },
   plugins: [],

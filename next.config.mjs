@@ -1,15 +1,9 @@
 /** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === "production";
-
 const nextConfig = {
-  basePath: isProd ? "/Crypgo" : "",
-  assetPrefix: isProd ? "/Crypgo/" : "",
-  output: "export",
+  reactStrictMode: true,
   images: {
-    unoptimized: true,
+    unoptimized: true, // Si no usas imagen optimizada
   },
 };
 
 export default nextConfig;
-
- 

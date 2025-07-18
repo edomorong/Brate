@@ -1,18 +1,19 @@
-import "../style/global.css"; // ✅ Importa Tailwind desde el archivo correcto
+import * as React from "react";
 import { DM_Sans } from "next/font/google";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 import { ThemeProvider } from "next-themes";
 import ScrollToTop from "@/components/ScrollToTop";
 import Aoscompo from "@/utils/aos";
+import "@/style.css"; // <-- si tu CSS está directamente en src
 
 const font = DM_Sans({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={font.className}>
@@ -28,3 +29,4 @@ export default function RootLayout({
     </html>
   );
 }
+
