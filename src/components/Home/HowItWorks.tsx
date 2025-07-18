@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { getImagePrefix } from "@/utils/utils";
 
 const HowItWorks = () => {
   const brateWallet = "7vPwgHYmLVGiLbuwrdskchKtpPbwY91efcfxgkeVVD9L";
@@ -77,7 +76,6 @@ const HowItWorks = () => {
             your world.
           </p>
 
-          {/* ✅ Buy Button Actualizado */}
           <div className="flex justify-center">
             <button
               onClick={handleBuyClick}
@@ -96,7 +94,7 @@ const HowItWorks = () => {
           className="flex justify-center"
         >
           <Image
-            src={`${getImagePrefix()}images/hero/how-it-works-brate.png`}
+            src="/images/hero/how-it-works-brate.png"
             alt="How it works illustration"
             width={580}
             height={400}

@@ -1,8 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { getImagePrefix } from "@/utils/utils";
 
 export default function Hero() {
   const [tokenData, setTokenData] = useState<any>(null);
@@ -32,10 +31,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section
-      className="relative md:pt-40 md:pb-28 py-20 overflow-hidden z-1"
-      id="main-banner"
-    >
+    <section className="relative md:pt-40 md:pb-28 py-20 overflow-hidden z-1" id="main-banner">
       <div className="container mx-auto lg:max-w-screen-xl px-4">
         <div className="grid grid-cols-12 items-center">
           <motion.div
@@ -46,7 +42,7 @@ export default function Hero() {
           >
             <div className="flex items-center gap-6 justify-center lg:justify-start mb-5 mt-24">
               <Image
-                src={`${getImagePrefix()}images/icons/icon-bag.svg`}
+                src="/images/icons/icon-bag.svg"
                 alt="icon"
                 width={40}
                 height={40}
@@ -79,11 +75,9 @@ export default function Hero() {
             </p>
 
             <div className="flex gap-8 justify-center lg:justify-start">
-              {/* ✅ Botón modificado funcional con Discord */}
               <button
                 onClick={async () => {
-                  const brateWallet =
-                    "7vPwgHYmLVGiLbuwrdskchKtpPbwY91efcfxgkeVVD9L";
+                  const brateWallet = "7vPwgHYmLVGiLbuwrdskchKtpPbwY91efcfxgkeVVD9L";
                   try {
                     const provider = (window as any).solana;
                     if (provider && provider.isPhantom) {
@@ -93,8 +87,7 @@ export default function Hero() {
                       const connection = new (window as any).solanaWeb3.Connection(
                         "https://api.mainnet-beta.solana.com"
                       );
-                      const { SystemProgram, Transaction, PublicKey } =
-                        (window as any).solanaWeb3;
+                      const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
 
                       const lamports = 10000000; // 0.01 SOL
                       const transaction = new Transaction().add(
@@ -106,9 +99,7 @@ export default function Hero() {
                       );
 
                       const signed = await provider.signTransaction(transaction);
-                      const signature = await connection.sendRawTransaction(
-                        signed.serialize()
-                      );
+                      const signature = await connection.sendRawTransaction(signed.serialize());
 
                       const sol = lamports / 1e9;
                       const estimatedBRATE = sol / 0.0000005;
@@ -187,7 +178,7 @@ export default function Hero() {
           >
             <div className="ml-20 -mr-64 max-w-[600px]">
               <Image
-                src={`${getImagePrefix()}images/hero/banner-image.png`}
+                src="/images/hero/banner-image.png"
                 alt="Banner"
                 width={1150}
                 height={1150}

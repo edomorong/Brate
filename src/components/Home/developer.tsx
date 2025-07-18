@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { getImagePrefix } from "@/utils/utils";
 import { motion } from "framer-motion";
 
 const Developer = () => {
@@ -35,7 +34,7 @@ const Developer = () => {
           transition={{ duration: 0.6 }}
         >
           <Image
-            src={`${getImagePrefix()}images/hero/developer-ecosystem.png`}
+            src="/images/hero/developer-ecosystem.png"
             alt="Developer Ecosystem"
             width={1200}
             height={800}
@@ -48,4 +47,3 @@ const Developer = () => {
 };
 
 export default Developer;
-
