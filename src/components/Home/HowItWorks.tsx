@@ -3,53 +3,65 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const HowItWorks = () => {
-  const brateWallet = "7vPwgHYmLVGiLbuwrdskchKtpPbwY91efcfxgkeVVD9L";
+  const saleWallet = "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
 
   const handleBuyClick = async () => {
     try {
       const provider = (window as any).solana;
-      if (provider && provider.isPhantom) {
-        const res = await provider.connect();
-        const userPublicKey = res.publicKey;
-
-        const connection = new (window as any).solanaWeb3.Connection(
-          "https://api.mainnet-beta.solana.com"
-        );
-        const { SystemProgram, Transaction, PublicKey } =
-          (window as any).solanaWeb3;
-
-        const lamports = 10000000; // 0.01 SOL
-        const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: new PublicKey(userPublicKey),
-            toPubkey: new PublicKey(brateWallet),
-            lamports,
-          })
-        );
-
-        const signed = await provider.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(
-          signed.serialize()
-        );
-
-        const sol = lamports / 1e9;
-        const estimatedBRATE = sol / 0.0000005;
-        const explorerLink = `https://solscan.io/tx/${signature}`;
-
-        await fetch("/api/notify-discord", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sol,
-            brate: estimatedBRATE,
-            wallet: userPublicKey.toString(),
-            tx: explorerLink,
-          }),
-        });
-
-        alert(`✅ Compra enviada! TX: ${explorerLink}`);
-      } else {
+      if (!provider || !provider.isPhantom) {
         window.open("https://phantom.app/", "_blank");
+        return;
+      }
+
+      const res = await provider.connect();
+      const userPublicKey = res.publicKey;
+
+      const connection = new (window as any).solanaWeb3.Connection(
+        "https://api.mainnet-beta.solana.com"
+      );
+      const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
+
+      const lamports = 10000000; // 0.01 SOL
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(userPublicKey),
+          toPubkey: new PublicKey(saleWallet),
+          lamports,
+        })
+      );
+
+      const signed = await provider.signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signed.serialize());
+
+      const sol = lamports / 1e9;
+      const estimatedBRATE = sol / 0.0000005;
+      const explorerLink = `https://solscan.io/tx/${signature}`;
+
+      await fetch("/api/notify-discord", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sol,
+          brate: estimatedBRATE,
+          wallet: userPublicKey.toString(),
+          tx: explorerLink,
+        }),
+      });
+
+      const transferRes = await fetch("/api/transfer-brate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiver: userPublicKey.toString(),
+          amount: estimatedBRATE,
+        }),
+      });
+
+      if (transferRes.ok) {
+        const { signature: brateSig } = await transferRes.json();
+        alert(`✅ Compra completada!\nSOL: ${explorerLink}\nBRATE: https://solscan.io/tx/${brateSig}`);
+      } else {
+        alert("⚠️ Error al transferir los tokens BRATE");
       }
     } catch (err) {
       console.error("Connection error:", err);
@@ -70,10 +82,9 @@ const HowItWorks = () => {
             How It Works: Real AI in Real Life
           </h2>
           <p className="text-white text-lg mb-8">
-            Discover how BRATE transforms daily experiences through augmented
-            reality, blockchain, and smart assistants — all powered by $BRATE.
-            From smart glasses to immersive city interactions, we bring AI into
-            your world.
+            Discover how BRATE transforms daily experiences through augmented reality,
+            blockchain, and smart assistants — all powered by $BRATE.
+            From smart glasses to immersive city interactions, we bring AI into your world.
           </p>
 
           <div className="flex justify-center">

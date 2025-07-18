@@ -30,6 +30,67 @@ export default function Hero() {
     fetchTokenData();
   }, []);
 
+  const saleWallet = "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
+
+  const handleBuyClick = async () => {
+    try {
+      const provider = (window as any).solana;
+      if (!provider || !provider.isPhantom) {
+        window.open("https://phantom.app/", "_blank");
+        return;
+      }
+
+      const res = await provider.connect();
+      const userPublicKey = res.publicKey;
+
+      const connection = new (window as any).solanaWeb3.Connection(
+        "https://api.mainnet-beta.solana.com"
+      );
+      const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
+
+      const lamports = 10000000; // 0.01 SOL
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(userPublicKey),
+          toPubkey: new PublicKey(saleWallet),
+          lamports,
+        })
+      );
+
+      const signed = await provider.signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signed.serialize());
+
+      const sol = lamports / 1e9;
+      const estimatedBRATE = sol / 0.0000005;
+      const explorerLink = `https://solscan.io/tx/${signature}`;
+
+      await fetch("/api/notify-discord", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sol,
+          brate: estimatedBRATE,
+          wallet: userPublicKey.toString(),
+          tx: explorerLink,
+        }),
+      });
+
+      await fetch("/api/transfer-brate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiver: userPublicKey.toString(),
+          amount: estimatedBRATE,
+        }),
+      });
+
+      alert(`✅ Compra completada! TX: ${explorerLink}`);
+    } catch (err) {
+      console.error("Error al conectar:", err);
+      alert("⚠️ Error al procesar la compra.");
+    }
+  };
+
   return (
     <section className="relative md:pt-40 md:pb-28 py-20 overflow-hidden z-1" id="main-banner">
       <div className="container mx-auto lg:max-w-screen-xl px-4">
@@ -41,12 +102,7 @@ export default function Hero() {
             className="lg:col-span-5 col-span-12"
           >
             <div className="flex items-center gap-6 justify-center lg:justify-start mb-5 mt-24">
-              <Image
-                src="/images/icons/icon-bag.svg"
-                alt="icon"
-                width={40}
-                height={40}
-              />
+              <Image src="/images/icons/icon-bag.svg" alt="icon" width={40} height={40} />
               <p className="text-white sm:text-28 text-18 mb-0">
                 Crypto On The <span className="text-[#38bdf8]">Go</span>
               </p>
@@ -58,73 +114,21 @@ export default function Hero() {
             </h1>
 
             <p className="text-white text-center lg:text-start mb-6 text-[15px]">
-              A revolutionary AI-powered crypto-social app that lets you
-              navigate the real and digital world, earn rewards, make payments,
-              and explore new opportunities.
+              A revolutionary AI-powered crypto-social app that lets you navigate the real and
+              digital world, earn rewards, make payments, and explore new opportunities.
             </p>
 
             <p className="text-white text-center lg:text-start mb-6 text-[15px] leading-snug">
               The first 100 holders of{" "}
-              <span className="text-[#38bdf8] font-bold">$BRATE</span> will
-              unlock exclusive early staking rewards. As demand grows, price
-              increases automatically. This ensures fair access and long-term
-              commitment. <br />
-              <span className="font-medium text-[#38bdf8]">
-                Secure your place now!
-              </span>
+              <span className="text-[#38bdf8] font-bold">$BRATE</span> will unlock exclusive early
+              staking rewards. As demand grows, price increases automatically. This ensures fair
+              access and long-term commitment. <br />
+              <span className="font-medium text-[#38bdf8]">Secure your place now!</span>
             </p>
 
             <div className="flex gap-8 justify-center lg:justify-start">
               <button
-                onClick={async () => {
-                  const brateWallet = "7vPwgHYmLVGiLbuwrdskchKtpPbwY91efcfxgkeVVD9L";
-                  try {
-                    const provider = (window as any).solana;
-                    if (provider && provider.isPhantom) {
-                      const res = await provider.connect();
-                      const userPublicKey = res.publicKey;
-
-                      const connection = new (window as any).solanaWeb3.Connection(
-                        "https://api.mainnet-beta.solana.com"
-                      );
-                      const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
-
-                      const lamports = 10000000; // 0.01 SOL
-                      const transaction = new Transaction().add(
-                        SystemProgram.transfer({
-                          fromPubkey: new PublicKey(userPublicKey),
-                          toPubkey: new PublicKey(brateWallet),
-                          lamports,
-                        })
-                      );
-
-                      const signed = await provider.signTransaction(transaction);
-                      const signature = await connection.sendRawTransaction(signed.serialize());
-
-                      const sol = lamports / 1e9;
-                      const estimatedBRATE = sol / 0.0000005;
-                      const explorerLink = `https://solscan.io/tx/${signature}`;
-
-                      await fetch("/api/notify-discord", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          sol,
-                          brate: estimatedBRATE,
-                          wallet: userPublicKey.toString(),
-                          tx: explorerLink,
-                        }),
-                      });
-
-                      alert(`✅ Compra enviada! TX: ${explorerLink}`);
-                    } else {
-                      window.open("https://phantom.app/", "_blank");
-                    }
-                  } catch (err) {
-                    console.error("Error en la compra:", err);
-                    alert("⚠️ Error al procesar la compra.");
-                  }
-                }}
+                onClick={handleBuyClick}
                 className="border border-[#38bdf8] text-[#38bdf8] font-medium text-21 px-7 py-2 rounded-lg hover:bg-[#38bdf8] hover:text-darkmode transition"
               >
                 Buy BRATE
