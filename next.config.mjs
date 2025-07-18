@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    unoptimized: true, // Si no usas imagen optimizada
+    unoptimized: true, // si no usas loader externo
   },
 };
 
