@@ -29,7 +29,7 @@
     "next-env.d.ts",
     "tailwind.config.js",
     ".next/types/**/*.ts",
-    "src/global.d.ts"
+    "src/types/**/*.d.ts"   // ✅ Tipos como phantom.d.ts aquí
   ],
   "exclude": ["node_modules"]
 }
