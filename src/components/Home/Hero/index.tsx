@@ -1,11 +1,22 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  clusterApiUrl,
+} from "@solana/web3.js";
+import getProvider from "@/utils/getProvider";
 
 export default function Hero() {
   const [tokenData, setTokenData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const saleWallet = "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
 
   useEffect(() => {
     async function fetchTokenData() {
@@ -27,28 +38,24 @@ export default function Hero() {
         setIsLoading(false);
       }
     }
+
     fetchTokenData();
   }, []);
 
-  const saleWallet = "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
-
   const handleBuyClick = async () => {
     try {
-      const provider = (window as any).solana;
-      if (!provider || !provider.isPhantom) {
-        window.open("https://phantom.app/", "_blank");
+      const provider = await getProvider();
+      if (!provider) {
+        alert("Phantom Wallet no encontrada.");
         return;
       }
 
       const res = await provider.connect();
       const userPublicKey = res.publicKey;
 
-      const connection = new (window as any).solanaWeb3.Connection(
-        "https://api.mainnet-beta.solana.com"
-      );
-      const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
-
+      const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
       const lamports = 10000000; // 0.01 SOL
+
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: new PublicKey(userPublicKey),
@@ -57,8 +64,12 @@ export default function Hero() {
         })
       );
 
+      transaction.feePayer = userPublicKey;
+      transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
       const signed = await provider.signTransaction(transaction);
       const signature = await connection.sendRawTransaction(signed.serialize());
+      await connection.confirmTransaction(signature);
 
       const sol = lamports / 1e9;
       const estimatedBRATE = sol / 0.0000005;
@@ -109,8 +120,8 @@ export default function Hero() {
             </div>
 
             <h1 className="text-white font-medium lg:text-76 md:text-70 text-54 text-center lg:text-start mb-3">
-              Join the future of <span className="text-[#38bdf8]">Crypto</span>{" "}
-              with <span className="text-[#38bdf8]">BRATE</span>!
+              Join the future of <span className="text-[#38bdf8]">Crypto</span> with {" "}
+              <span className="text-[#38bdf8]">BRATE</span>!
             </h1>
 
             <p className="text-white text-center lg:text-start mb-6 text-[15px]">
@@ -119,7 +130,7 @@ export default function Hero() {
             </p>
 
             <p className="text-white text-center lg:text-start mb-6 text-[15px] leading-snug">
-              The first 100 holders of{" "}
+              The first 100 holders of {" "}
               <span className="text-[#38bdf8] font-bold">$BRATE</span> will unlock exclusive early
               staking rewards. As demand grows, price increases automatically. This ensures fair
               access and long-term commitment. <br />
