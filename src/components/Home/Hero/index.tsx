@@ -76,6 +76,23 @@ export default function Hero() {
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, "confirmed");
 
+      // Transferencia BRATE desde el backend
+      const brateAmount = parseFloat(solAmount) / 0.0000005;
+
+      const res = await fetch("/api/transfer-brate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiver: publicKey.toString(),
+          amount: brateAmount,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Transferencia de BRATE fallida");
+      }
+
       alert(`✅ Transacción enviada!\nhttps://solscan.io/tx/${signature}`);
     } catch (err) {
       console.error("Transaction error:", err);
@@ -87,7 +104,6 @@ export default function Hero() {
     <section className="relative md:pt-40 md:pb-28 py-20 overflow-hidden z-1" id="main-banner">
       <div className="container mx-auto lg:max-w-screen-xl px-4">
         <div className="grid grid-cols-12 items-center">
-          {/* Left content */}
           <motion.div
             initial={{ x: "-100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -102,9 +118,7 @@ export default function Hero() {
             </div>
 
             <h1 className="text-white font-medium lg:text-76 md:text-70 text-54 text-center lg:text-start mb-3">
-              Join the future of{" "}
-              <span className="text-[#38bdf8]">Crypto</span> with{" "}
-              <span className="text-[#38bdf8]">BRATE</span>!
+              Join the future of <span className="text-[#38bdf8]">Crypto</span> with <span className="text-[#38bdf8]">BRATE</span>!
             </h1>
 
             <p className="text-white text-center lg:text-start mb-6 text-[15px]">
@@ -112,14 +126,15 @@ export default function Hero() {
             </p>
 
             <p className="text-white text-center lg:text-start mb-6 text-[15px] leading-snug">
-              The first 100 holders of{" "}
-              <span className="text-[#38bdf8] font-bold">$BRATE</span> will unlock early rewards.
+              The first 100 holders of <span className="text-[#38bdf8] font-bold">$BRATE</span> will unlock early rewards.
               <br />
               <span className="font-medium text-[#38bdf8]">Secure your place now!</span>
             </p>
 
             <div className="flex flex-col gap-4 md:flex-row items-center justify-center lg:justify-start mb-6">
-              <WalletMultiButton className="!bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white" />
+              <div className="w-full md:w-auto">
+                <WalletMultiButton className="!bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white w-full md:w-auto text-center" />
+              </div>
 
               <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-[200px]">
                 <input
@@ -142,7 +157,6 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Mobile-adapted action buttons */}
             <div className="flex flex-col md:flex-row gap-4 justify-center lg:justify-start mt-6">
               <button
                 onClick={handleBuyClick}
@@ -160,7 +174,6 @@ export default function Hero() {
               </a>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-10 text-white text-center">
               <div className="bg-[#0f172a] border border-[#38bdf8] p-4 rounded-lg">
                 <p className="text-sm">Total Supply</p>
@@ -172,9 +185,7 @@ export default function Hero() {
               </div>
               <div className="bg-[#0f172a] border border-[#38bdf8] p-4 rounded-lg">
                 <p className="text-sm">Holders</p>
-                <p className="text-[#38bdf8] font-bold">
-                  {isLoading ? "..." : holders ?? "?"}
-                </p>
+                <p className="text-[#38bdf8] font-bold">{isLoading ? "..." : holders ?? "?"}</p>
               </div>
               <div className="bg-[#0f172a] border border-[#38bdf8] p-4 rounded-lg">
                 <p className="text-sm">Circulating Supply</p>
@@ -191,7 +202,6 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* Imagen visible en móvil también */}
           <motion.div
             initial={{ x: "100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}

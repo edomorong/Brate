@@ -72,7 +72,7 @@ const HowItWorks = () => {
           <div className="flex flex-col items-center gap-4 mb-6">
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               {/* Wallet */}
-              <WalletMultiButton className="!bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white" />
+              <WalletMultiButton className="hidden md:block !bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white" />
 
               {/* Input SOL */}
               <div className="flex items-center justify-between border border-[#38bdf8] rounded-lg px-4 py-2 bg-[#0f172a] w-[200px]">
@@ -116,7 +116,7 @@ const HowItWorks = () => {
               onClick={handleBuyClick}
               className="mt-2 border border-[#38bdf8] text-[#38bdf8] font-medium text-lg px-8 py-2 rounded-lg hover:bg-[#38bdf8] hover:text-darkmode transition"
             >
-              Buy Crypto
+              Buy BRATE
             </button>
           </div>
         </motion.div>

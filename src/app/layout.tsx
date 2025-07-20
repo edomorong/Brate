@@ -19,9 +19,7 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 
 const font = DM_Sans({ subsets: ["latin"] });
 
-// ✅ Usa variable de entorno segura
 const endpoint = process.env.NEXT_PUBLIC_HELIUS_RPC || "";
-
 const wallets = [new PhantomWalletAdapter()];
 
 export default function RootLayout({ children }: { children: ReactNode }) {

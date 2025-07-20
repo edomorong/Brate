@@ -11,6 +11,11 @@ const MobileHeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {
     setSubmenuOpen(!submenuOpen);
   };
 
+  // Ocultar botones de wallet en el menú móvil
+  if (item.label.toLowerCase().includes("wallet")) {
+    return null;
+  }
+
   return (
     <div className="relative w-full">
       {!hasSubItems ? (

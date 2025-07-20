@@ -54,7 +54,7 @@ const Header: React.FC = () => {
           </nav>
           <div className="flex items-center gap-3">
             {!connected && (
-              <WalletMultiButton className="!hidden lg:!block border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
+              <WalletMultiButton className="hidden lg:inline-flex border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
             )}
             <button
               onClick={() => setNavbarOpen(!navbarOpen)}
