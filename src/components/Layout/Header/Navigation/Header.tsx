@@ -47,14 +47,18 @@ const Header: React.FC = () => {
       <div className="container mx-auto max-w-screen-xl px-4">
         <div className="flex items-center justify-between">
           <Logo />
+
+          {/* Navegación principal */}
           <nav className="hidden lg:flex flex-grow items-center justify-center gap-6 text-sm">
             {headerData.map((item, index) => (
               <HeaderLink key={index} item={item} />
             ))}
           </nav>
+
+          {/* Botón de wallet y menú móvil */}
           <div className="flex items-center gap-3">
             {!connected && (
-              <WalletMultiButton className="hidden lg:inline-flex border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
+              <WalletMultiButton className="hidden lg:inline-flex !min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
             )}
             <button
               onClick={() => setNavbarOpen(!navbarOpen)}
@@ -69,6 +73,7 @@ const Header: React.FC = () => {
         </div>
       </div>
 
+      {/* Menú móvil */}
       {navbarOpen && (
         <>
           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-40" />
@@ -86,12 +91,14 @@ const Header: React.FC = () => {
                 ✕
               </button>
             </div>
+
             <nav className="flex flex-col items-start p-4 space-y-2">
               {headerData.map((item, index) => (
                 <MobileHeaderLink key={index} item={item} />
               ))}
+
               {!connected && (
-                <WalletMultiButton className="w-full border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300 mt-4" />
+                <WalletMultiButton className="w-full !min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300 mt-4" />
               )}
             </nav>
           </div>

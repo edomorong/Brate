@@ -70,10 +70,13 @@ const HowItWorks = () => {
 
           {/* Wallet + Inputs */}
           <div className="flex flex-col items-center gap-4 mb-6">
-            <div className="flex flex-col md:flex-row gap-4 justify-center">
-              {/* Wallet */}
-              <WalletMultiButton className="hidden md:block !bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white" />
+            <div className="w-full flex justify-center">
+              {!connected && (
+                <WalletMultiButton className="!min-w-fit !whitespace-nowrap !text-sm !bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white" />
+              )}
+            </div>
 
+            <div className="flex flex-col md:flex-row gap-4 justify-center mt-2">
               {/* Input SOL */}
               <div className="flex items-center justify-between border border-[#38bdf8] rounded-lg px-4 py-2 bg-[#0f172a] w-[200px]">
                 <input
