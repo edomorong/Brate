@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { HeaderItem } from "@/types/menu";
@@ -10,11 +11,6 @@ const MobileHeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {
   const handleToggle = () => {
     setSubmenuOpen(!submenuOpen);
   };
-
-  // Ocultar botones de wallet en el menú móvil
-  if (item.label.toLowerCase().includes("wallet")) {
-    return null;
-  }
 
   return (
     <div className="relative w-full">

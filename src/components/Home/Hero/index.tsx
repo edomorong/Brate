@@ -53,7 +53,7 @@ export default function Hero() {
 
   const handleBuyClick = useCallback(async () => {
     if (!connected || !publicKey) {
-      alert("🔌 Conecta tu wallet Phantom para continuar.");
+      alert("\ud83d\udd0c Conecta tu wallet Phantom para continuar.");
       return;
     }
 
@@ -76,7 +76,6 @@ export default function Hero() {
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, "confirmed");
 
-      // Transferencia BRATE desde el backend
       const brateAmount = parseFloat(solAmount) / 0.0000005;
 
       const res = await fetch("/api/transfer-brate", {
@@ -93,10 +92,10 @@ export default function Hero() {
         throw new Error(error.error || "Transferencia de BRATE fallida");
       }
 
-      alert(`✅ Transacción enviada!\nhttps://solscan.io/tx/${signature}`);
+      alert(`\u2705 Transacci\u00f3n enviada!\nhttps://solscan.io/tx/${signature}`);
     } catch (err) {
       console.error("Transaction error:", err);
-      alert("⚠️ Transacción cancelada o fallida.");
+      alert("\u26a0\ufe0f Transacci\u00f3n cancelada o fallida.");
     }
   }, [connected, publicKey, connection, sendTransaction, solAmount]);
 
@@ -132,8 +131,8 @@ export default function Hero() {
             </p>
 
             <div className="flex flex-col gap-4 md:flex-row items-center justify-center lg:justify-start mb-6">
-              <div className="w-full md:w-auto">
-                <WalletMultiButton className="!bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white w-full md:w-auto text-center" />
+              <div className="w-full md:w-auto text-center">
+                <WalletMultiButton className="!bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white !w-full md:!w-auto !text-center" />
               </div>
 
               <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-[200px]">
