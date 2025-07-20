@@ -17,20 +17,20 @@ const MobileHeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {
         item.href ? (
           <Link
             href={item.href}
-            className="flex items-center justify-between w-full py-2 text-muted focus:outline-none"
+            className="flex items-center justify-between w-full py-2 text-white hover:text-[#29b6f6] transition"
             target={item.target}
           >
             {item.label}
           </Link>
         ) : (
-          <span className="flex items-center justify-between w-full py-2 text-muted cursor-default">
+          <span className="flex items-center justify-between w-full py-2 text-white">
             {item.label}
           </span>
         )
       ) : (
         <button
           onClick={handleToggle}
-          className="flex items-center justify-between w-full py-2 text-muted focus:outline-none"
+          className="flex items-center justify-between w-full py-2 text-white hover:text-[#29b6f6] transition"
         >
           {item.label}
           <svg
@@ -52,12 +52,12 @@ const MobileHeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {
       )}
 
       {submenuOpen && hasSubItems && (
-        <div className="bg-white p-2 w-full">
+        <div className="bg-darkmode p-2 w-full border border-gray-700 rounded-md mt-1">
           {item.subItems?.map((subItem, index) => (
             <Link
               key={index}
               href={subItem.href}
-              className="block py-2 text-gray-500 hover:bg-gray-200"
+              className="block py-2 text-white hover:text-[#29b6f6] transition"
             >
               {subItem.label}
             </Link>

@@ -1,73 +1,54 @@
 "use client";
-import Image from "next/image";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import {
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 
 const HowItWorks = () => {
-  const saleWallet = "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction, connected } = useWallet();
+  const [solAmount, setSolAmount] = useState("0.01");
+  const saleWallet = new PublicKey("GY2Tc4KJTN96HtgLga2cEcbuQVvNUotp4TWFvebggE1F");
 
-  const handleBuyClick = async () => {
+  const handleBuyClick = useCallback(async () => {
+    if (!connected || !publicKey) {
+      alert("🔌 Por favor conecta tu wallet Phantom.");
+      return;
+    }
+
     try {
-      const provider = (window as any).solana;
-      if (!provider || !provider.isPhantom) {
-        window.open("https://phantom.app/", "_blank");
-        return;
-      }
+      const sol = parseFloat(solAmount);
+      const lamports = sol * LAMPORTS_PER_SOL;
 
-      const res = await provider.connect();
-      const userPublicKey = res.publicKey;
-
-      const connection = new (window as any).solanaWeb3.Connection(
-        "https://api.mainnet-beta.solana.com"
-      );
-      const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
-
-      const lamports = 10000000; // 0.01 SOL
       const transaction = new Transaction().add(
         SystemProgram.transfer({
-          fromPubkey: new PublicKey(userPublicKey),
-          toPubkey: new PublicKey(saleWallet),
+          fromPubkey: publicKey,
+          toPubkey: saleWallet,
           lamports,
         })
       );
 
-      const signed = await provider.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(signed.serialize());
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
 
-      const sol = lamports / 1e9;
-      const estimatedBRATE = sol / 0.0000005;
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "confirmed");
+
       const explorerLink = `https://solscan.io/tx/${signature}`;
-
-      await fetch("/api/notify-discord", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sol,
-          brate: estimatedBRATE,
-          wallet: userPublicKey.toString(),
-          tx: explorerLink,
-        }),
-      });
-
-      const transferRes = await fetch("/api/transfer-brate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          receiver: userPublicKey.toString(),
-          amount: estimatedBRATE,
-        }),
-      });
-
-      if (transferRes.ok) {
-        const { signature: brateSig } = await transferRes.json();
-        alert(`✅ Compra completada!\nSOL: ${explorerLink}\nBRATE: https://solscan.io/tx/${brateSig}`);
-      } else {
-        alert("⚠️ Error al transferir los tokens BRATE");
-      }
-    } catch (err) {
-      console.error("Connection error:", err);
-      alert("⚠️ Error al procesar la compra.");
+      alert(`✅ Transacción enviada!\nVer en Solscan: ${explorerLink}`);
+    } catch (error) {
+      console.error("Transacción fallida:", error);
+      alert("⚠️ La transacción fue cancelada o falló.");
     }
-  };
+  }, [connected, publicKey, connection, sendTransaction, solAmount]);
 
   return (
     <section className="py-20 bg-background" id="how-it-works">
@@ -83,21 +64,64 @@ const HowItWorks = () => {
           </h2>
           <p className="text-white text-lg mb-8">
             Discover how BRATE transforms daily experiences through augmented reality,
-            blockchain, and smart assistants — all powered by $BRATE.
-            From smart glasses to immersive city interactions, we bring AI into your world.
+            blockchain, and smart assistants — all powered by $BRATE. From smart glasses
+            to immersive city interactions, we bring AI into your world.
           </p>
 
-          <div className="flex justify-center">
+          {/* Wallet + Inputs */}
+          <div className="flex flex-col items-center gap-4 mb-6">
+            <div className="flex flex-col md:flex-row gap-4 justify-center">
+              {/* Wallet */}
+              <WalletMultiButton className="!bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white" />
+
+              {/* Input SOL */}
+              <div className="flex items-center justify-between border border-[#38bdf8] rounded-lg px-4 py-2 bg-[#0f172a] w-[200px]">
+                <input
+                  type="number"
+                  min="0.001"
+                  step="0.001"
+                  value={solAmount}
+                  onChange={(e) => setSolAmount(e.target.value)}
+                  className="bg-transparent text-white text-sm text-left w-full outline-none"
+                />
+                <Image
+                  src="/images/solana-icon.png"
+                  alt="SOL"
+                  width={20}
+                  height={20}
+                  className="ml-2"
+                />
+              </div>
+
+              {/* BRATE Estimado */}
+              <div className="flex items-center justify-between border border-[#38bdf8] rounded-lg px-4 py-2 bg-[#0f172a] w-[200px]">
+                <span className="text-[#38bdf8] text-sm">
+                  ≈ {(parseFloat(solAmount || "0") / 0.0000005).toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 3,
+                  })}
+                </span>
+                <Image
+                  src="/images/brate-icon.png"
+                  alt="BRATE"
+                  width={20}
+                  height={20}
+                  className="ml-2"
+                />
+              </div>
+            </div>
+
+            {/* Botón Comprar */}
             <button
               onClick={handleBuyClick}
-              className="border border-[#38bdf8] text-[#38bdf8] font-medium text-lg px-7 py-3 rounded-lg hover:bg-[#38bdf8] hover:text-darkmode transition duration-300"
+              className="mt-2 border border-[#38bdf8] text-[#38bdf8] font-medium text-lg px-8 py-2 rounded-lg hover:bg-[#38bdf8] hover:text-darkmode transition"
             >
               Buy Crypto
             </button>
           </div>
         </motion.div>
 
-        {/* Image Section */}
+        {/* Imagen */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}

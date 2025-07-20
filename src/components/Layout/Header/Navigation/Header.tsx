@@ -7,14 +7,15 @@ import { headerData } from "./menuData";
 import Logo from "../Logo";
 import HeaderLink from "./HeaderLink";
 import MobileHeaderLink from "./MobileHeaderLink";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 const Header: React.FC = () => {
   const pathUrl = usePathname();
   const [navbarOpen, setNavbarOpen] = useState(false);
   const [sticky, setSticky] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-
-  const brateWallet = "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
+  const { connected } = useWallet();
 
   const handleScroll = () => setSticky(window.scrollY >= 80);
 
@@ -37,64 +38,6 @@ const Header: React.FC = () => {
     };
   }, [navbarOpen]);
 
-  const handleWalletConnect = async () => {
-    try {
-      const provider = (window as any).solana;
-      if (provider && provider.isPhantom) {
-        const res = await provider.connect();
-        const userPublicKey = res.publicKey;
-
-        const connection = new (window as any).solanaWeb3.Connection(
-          "https://api.mainnet-beta.solana.com"
-        );
-        const { SystemProgram, Transaction, PublicKey } = (window as any).solanaWeb3;
-
-        const lamports = 10000000;
-        const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: new PublicKey(userPublicKey),
-            toPubkey: new PublicKey(brateWallet),
-            lamports,
-          })
-        );
-
-        const signed = await provider.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signed.serialize());
-
-        const sol = lamports / 1e9;
-        const estimatedBRATE = sol / 0.0000005;
-        const explorerLink = `https://solscan.io/tx/${signature}`;
-
-        await fetch("/api/notify-discord", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sol,
-            brate: estimatedBRATE,
-            wallet: userPublicKey.toString(),
-            tx: explorerLink,
-          }),
-        });
-
-        await fetch("/api/transfer-brate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            receiver: userPublicKey.toString(),
-            amount: estimatedBRATE,
-          }),
-        });
-
-        alert(`✅ Compra completada! TX: ${explorerLink}`);
-      } else {
-        window.open("https://phantom.app/", "_blank");
-      }
-    } catch (err) {
-      console.error("Error al conectar:", err);
-      alert("⚠️ Error al procesar la compra.");
-    }
-  };
-
   return (
     <header
       className={`fixed top-0 z-40 w-full transition-all duration-300 ${
@@ -110,12 +53,9 @@ const Header: React.FC = () => {
             ))}
           </nav>
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleWalletConnect}
-              className="hidden lg:block border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300"
-            >
-              Buy BRATE
-            </button>
+            {!connected && (
+              <WalletMultiButton className="!hidden lg:!block border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
+            )}
             <button
               onClick={() => setNavbarOpen(!navbarOpen)}
               className="block lg:hidden p-2 rounded-lg"
@@ -150,12 +90,9 @@ const Header: React.FC = () => {
               {headerData.map((item, index) => (
                 <MobileHeaderLink key={index} item={item} />
               ))}
-              <button
-                onClick={handleWalletConnect}
-                className="w-full border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300 mt-4"
-              >
-                Buy BRATE
-              </button>
+              {!connected && (
+                <WalletMultiButton className="w-full border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300 mt-4" />
+              )}
             </nav>
           </div>
         </>

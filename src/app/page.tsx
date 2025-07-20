@@ -1,4 +1,5 @@
 import React from "react";
+import SEOHead from "@/components/SEOHead";
 import Hero from "@/components/Home/Hero";
 import VideoBanner from "@/components/Home/VideoBanner";
 import WhatIsBrate from "@/components/Home/WhatIsBrate";

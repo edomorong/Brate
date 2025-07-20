@@ -6,13 +6,20 @@ import {
   transfer,
 } from "@solana/spl-token";
 
+// Configuración global
 const BRATE_MINT = new PublicKey("4r8dy53x7MsMfkWkwQL23byJUd19ou1LRHRR68YWzHgS");
-const DECIMALS = 1_000_000; // BRATE has 6 decimals
+const DECIMALS = 1_000_000; // BRATE tiene 6 decimales
 
+// Leer la clave privada desde el entorno de forma segura
 function getPrivateKey(): Uint8Array {
   const secret = process.env.PRIVATE_KEY;
-  if (!secret) throw new Error("PRIVATE_KEY is not defined in environment");
-  return Uint8Array.from(JSON.parse(secret));
+  if (!secret) throw new Error("❌ PRIVATE_KEY no definida en el entorno");
+
+  try {
+    return Uint8Array.from(JSON.parse(secret));
+  } catch (err) {
+    throw new Error("❌ PRIVATE_KEY mal formateada. Debe ser un array JSON");
+  }
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -22,8 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { receiver, amount } = req.body;
 
-  if (!receiver || typeof amount !== "number") {
-    return res.status(400).json({ error: "Missing or invalid 'receiver' or 'amount'" });
+  // Validación de inputs
+  if (!receiver || typeof amount !== "number" || amount <= 0) {
+    return res.status(400).json({ error: "Parámetros inválidos: 'receiver' o 'amount'" });
   }
 
   try {
@@ -32,7 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const fromKeypair = Keypair.fromSecretKey(getPrivateKey());
     const fromWallet = fromKeypair.publicKey;
 
-    // Get source token account
+    const toWallet = new PublicKey(receiver);
+
+    // Crear o recuperar cuenta del remitente
     const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       fromKeypair,
@@ -40,15 +50,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fromWallet
     );
 
-    // Get or create destination token account
+    // Crear o recuperar cuenta del destinatario
     const toTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       fromKeypair,
       BRATE_MINT,
-      new PublicKey(receiver)
+      toWallet
     );
 
-    // Transfer BRATE
+    // Ejecutar transferencia
     const signature = await transfer(
       connection,
       fromKeypair,
@@ -58,10 +68,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       amount * DECIMALS
     );
 
-    console.log("✅ Transfer success:", signature);
+    console.log("✅ Transferencia exitosa:", signature);
     res.status(200).json({ success: true, signature });
-  } catch (err) {
-    console.error("❌ Token transfer failed:", err);
+  } catch (err: any) {
+    console.error("❌ Falló la transferencia:", err?.message || err);
     res.status(500).json({ error: "Transfer failed" });
   }
 }

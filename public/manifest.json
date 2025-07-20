@@ -1,0 +1,23 @@
+{
+  "name": "BRATE - AI Crypto Social App",
+  "short_name": "BRATE",
+  "description": "Join BRATE, the revolutionary AI-powered crypto-social platform built on Solana. Buy, stake and earn.",
+  "lang": "en",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#38bdf8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/logo/logo-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/logo/logo-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
