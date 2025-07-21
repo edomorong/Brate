@@ -22,7 +22,7 @@ export default function Hero() {
 
   const { connection } = useConnection();
   const { publicKey, sendTransaction, connected } = useWallet();
-  const saleWallet = new PublicKey("GY2Tc4KJTN96HtgLga2cEcbuQVvNUotp4TWFvebggE1F");
+  const saleWallet = new PublicKey("7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF");
 
   useEffect(() => {
     async function fetchHolders() {
@@ -32,9 +32,7 @@ export default function Hero() {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mintAccounts: [TOKEN_ADDRESS],
-            }),
+            body: JSON.stringify({ mintAccounts: [TOKEN_ADDRESS] }),
           }
         );
         const data = await res.json();
@@ -76,7 +74,7 @@ export default function Hero() {
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, "confirmed");
 
-      const brateAmount = parseFloat(solAmount) / 0.0000005;
+      const brateAmount = sol / 0.0000005;
 
       const res = await fetch("/api/transfer-brate", {
         method: "POST",
@@ -130,11 +128,13 @@ export default function Hero() {
               <span className="font-medium text-[#38bdf8]">Secure your place now!</span>
             </p>
 
-            {/* ✅ Wallet + Inputs */}
-            <div className="flex flex-col gap-4 md:flex-row items-center justify-center lg:justify-start mb-6">
-              <WalletMultiButton className="!min-w-fit !whitespace-nowrap !text-sm !px-6 !py-2 !bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold rounded-lg border border-white" />
+            {/* Wallet + Inputs */}
+            <div className="flex flex-col md:flex-row items-center gap-4 mb-6 w-full">
+              <div className="w-full md:w-auto">
+                <WalletMultiButton className="!min-w-full !whitespace-nowrap !text-sm !px-6 !py-2 !bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold rounded-lg border border-white w-full" />
+              </div>
 
-              <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-[200px]">
+              <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-full md:w-[200px]">
                 <input
                   type="number"
                   min="0.001"
@@ -147,7 +147,7 @@ export default function Hero() {
                 <Image src="/images/solana-icon.png" alt="SOL" width={18} height={18} className="ml-2 object-contain" />
               </div>
 
-              <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-[200px] justify-between">
+              <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-full md:w-[200px] justify-between">
                 <span className="text-[#38bdf8] font-medium text-sm truncate">
                   ≈ {(parseFloat(solAmount || "0") / 0.0000005).toLocaleString()}
                 </span>

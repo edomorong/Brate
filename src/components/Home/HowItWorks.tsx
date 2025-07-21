@@ -15,7 +15,9 @@ const HowItWorks = () => {
   const { connection } = useConnection();
   const { publicKey, sendTransaction, connected } = useWallet();
   const [solAmount, setSolAmount] = useState("0.01");
-  const saleWallet = new PublicKey("GY2Tc4KJTN96HtgLga2cEcbuQVvNUotp4TWFvebggE1F");
+
+  // ✅ ACTUALIZADA: misma wallet que envía los BRATE
+  const saleWallet = new PublicKey("7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF");
 
   const handleBuyClick = useCallback(async () => {
     if (!connected || !publicKey) {

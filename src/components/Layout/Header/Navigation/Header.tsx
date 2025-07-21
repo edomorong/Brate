@@ -55,11 +55,15 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Botón de wallet y menú móvil */}
+          {/* Botón de wallet solo en escritorio y botón menú móvil */}
           <div className="flex items-center gap-3">
+            {/* ✅ Solo se renderiza el botón en escritorio */}
             {!connected && (
-              <WalletMultiButton className="hidden lg:inline-flex !min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
+              <div className="hidden lg:inline-flex">
+                <WalletMultiButton className="!min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
+              </div>
             )}
+
             <button
               onClick={() => setNavbarOpen(!navbarOpen)}
               className="block lg:hidden p-2 rounded-lg"
