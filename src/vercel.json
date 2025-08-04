@@ -2,5 +2,11 @@
   "buildCommand": "npm install && npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "npm install --legacy-peer-deps"
+  "installCommand": "npm install --legacy-peer-deps",
+  "crons": [
+    {
+      "path": "/api/check-transactions",
+      "schedule": "*/5 * * * *" 
+    }
+  ]
 }

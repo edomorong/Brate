@@ -8,7 +8,14 @@ import Logo from "../Logo";
 import HeaderLink from "./HeaderLink";
 import MobileHeaderLink from "./MobileHeaderLink";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import dynamic from "next/dynamic";
+
+// ✅ Cargar WalletMultiButton solo en cliente para evitar hydration error
+const WalletMultiButtonDynamic = dynamic(
+  async () =>
+    (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
 
 const Header: React.FC = () => {
   const pathUrl = usePathname();
@@ -60,7 +67,7 @@ const Header: React.FC = () => {
             {/* ✅ Solo se renderiza el botón en escritorio */}
             {!connected && (
               <div className="hidden lg:inline-flex">
-                <WalletMultiButton className="!min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
+                <WalletMultiButtonDynamic className="!min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300" />
               </div>
             )}
 
@@ -102,7 +109,7 @@ const Header: React.FC = () => {
               ))}
 
               {!connected && (
-                <WalletMultiButton className="w-full !min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300 mt-4" />
+                <WalletMultiButtonDynamic className="w-full !min-w-fit !whitespace-nowrap !text-sm border border-[#29b6f6] text-[#29b6f6] hover:bg-[#29b6f6] hover:text-black font-medium px-6 py-2 rounded-lg transition duration-300 mt-4" />
               )}
             </nav>
           </div>

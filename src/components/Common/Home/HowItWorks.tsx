@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import dynamic from "next/dynamic";
 import {
   LAMPORTS_PER_SOL,
   PublicKey,
@@ -11,24 +11,44 @@ import {
   Transaction,
 } from "@solana/web3.js";
 
+// Cargar WalletMultiButton sin SSR para evitar errores de hidratación
+const WalletMultiButton = dynamic(
+  async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
+  { ssr: false }
+);
+
+// Variables de entorno
+const TOKEN_ADDRESS =
+  process.env.NEXT_PUBLIC_MINT_ADDRESS ||
+  "4r8dy53x7MsMfkWkwQL23byJUd19ou1LRHRR68YWzHgS";
+
+const SALE_WALLET =
+  process.env.NEXT_PUBLIC_SALE_WALLET ||
+  "7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF";
+
 const HowItWorks = () => {
   const { connection } = useConnection();
   const { publicKey, sendTransaction, connected } = useWallet();
   const [solAmount, setSolAmount] = useState("0.01");
 
-  // ✅ ACTUALIZADA: misma wallet que envía los BRATE
-  const saleWallet = new PublicKey("7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF");
+  const saleWallet = new PublicKey(SALE_WALLET);
 
   const handleBuyClick = useCallback(async () => {
     if (!connected || !publicKey) {
-      alert("🔌 Por favor conecta tu wallet Phantom.");
+      alert("🔌 Conecta tu wallet Phantom para continuar.");
       return;
     }
 
     try {
-      const sol = parseFloat(solAmount);
+      const sol = parseFloat(solAmount.replace(",", "."));
+      if (isNaN(sol) || sol <= 0) {
+        alert("Monto inválido");
+        return;
+      }
+
       const lamports = sol * LAMPORTS_PER_SOL;
 
+      // 1. Transferir SOL al wallet de venta
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -44,18 +64,34 @@ const HowItWorks = () => {
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, "confirmed");
 
-      const explorerLink = `https://solscan.io/tx/${signature}`;
-      alert(`✅ Transacción enviada!\nVer en Solscan: ${explorerLink}`);
-    } catch (error) {
-      console.error("Transacción fallida:", error);
-      alert("⚠️ La transacción fue cancelada o falló.");
+      // 2. Llamar API para enviar BRATE (igual que en Hero)
+      const res = await fetch("/api/buy-brate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buyer: publicKey.toString(),
+          solAmount: sol,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Error backend buy-brate:", error);
+        throw new Error(error.error || "Error al enviar BRATE");
+      }
+
+      const data = await res.json();
+      alert(`✅ Compra exitosa!\n${data.message}\n${data.solscan}`);
+    } catch (err) {
+      console.error("Transaction error:", err);
+      alert("⚠️ Transacción cancelada o fallida.");
     }
   }, [connected, publicKey, connection, sendTransaction, solAmount]);
 
   return (
     <section className="py-20 bg-background" id="how-it-works">
       <div className="container mx-auto px-6 lg:px-20 grid md:grid-cols-2 gap-14 items-center">
-        {/* Text Section */}
+        {/* Texto */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -70,59 +106,55 @@ const HowItWorks = () => {
             to immersive city interactions, we bring AI into your world.
           </p>
 
-          {/* Wallet + Inputs */}
+          {/* Sección Inputs + Botones en 2 filas */}
           <div className="flex flex-col items-center gap-4 mb-6">
-            <div className="w-full flex justify-center">
-              {!connected && (
-                <WalletMultiButton className="!min-w-fit !whitespace-nowrap !text-sm !bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold px-6 py-2 rounded-lg border border-white" />
-              )}
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-4 justify-center mt-2">
+            {/* Fila superior: Inputs */}
+            <div className="flex flex-row gap-4">
               {/* Input SOL */}
-              <div className="flex items-center justify-between border border-[#38bdf8] rounded-lg px-4 py-2 bg-[#0f172a] w-[200px]">
+              <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-[160px]">
                 <input
                   type="number"
                   min="0.001"
                   step="0.001"
                   value={solAmount}
                   onChange={(e) => setSolAmount(e.target.value)}
-                  className="bg-transparent text-white text-sm text-left w-full outline-none"
+                  className="bg-transparent text-white text-sm w-full outline-none text-left placeholder:text-gray-400"
+                  placeholder="0.00"
                 />
                 <Image
                   src="/images/solana-icon.png"
                   alt="SOL"
-                  width={20}
-                  height={20}
-                  className="ml-2"
+                  width={18}
+                  height={18}
+                  className="ml-2 object-contain"
                 />
               </div>
 
-              {/* BRATE Estimado */}
-              <div className="flex items-center justify-between border border-[#38bdf8] rounded-lg px-4 py-2 bg-[#0f172a] w-[200px]">
-                <span className="text-[#38bdf8] text-sm">
-                  ≈ {(parseFloat(solAmount || "0") / 0.0000005).toLocaleString(undefined, {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 3,
-                  })}
+              {/* BRATE estimado */}
+              <div className="flex items-center border border-[#38bdf8] rounded-lg px-3 py-2 bg-[#0f172a] w-[160px] justify-between">
+                <span className="text-[#38bdf8] font-medium text-sm truncate">
+                  ≈ {(parseFloat(solAmount || "0") * 1_500_000).toLocaleString()}
                 </span>
                 <Image
                   src="/images/brate-icon.png"
                   alt="BRATE"
-                  width={20}
-                  height={20}
-                  className="ml-2"
+                  width={18}
+                  height={18}
+                  className="object-contain"
                 />
               </div>
             </div>
 
-            {/* Botón Comprar */}
-            <button
-              onClick={handleBuyClick}
-              className="mt-2 border border-[#38bdf8] text-[#38bdf8] font-medium text-lg px-8 py-2 rounded-lg hover:bg-[#38bdf8] hover:text-darkmode transition"
-            >
-              Buy BRATE
-            </button>
+            {/* Fila inferior: Botones */}
+            <div className="flex flex-row gap-4">
+              <WalletMultiButton className="!min-w-[160px] !text-sm !px-6 !py-2 !bg-[#7c3aed] hover:!bg-[#8b5cf6] text-white font-semibold rounded-lg border border-white" />
+              <button
+                onClick={handleBuyClick}
+                className="w-[160px] border border-[#38bdf8] text-[#38bdf8] font-medium text-lg px-6 py-2 rounded-lg hover:bg-[#38bdf8] hover:text-darkmode transition"
+              >
+                Buy BRATE
+              </button>
+            </div>
           </div>
         </motion.div>
 

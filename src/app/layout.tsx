@@ -9,7 +9,6 @@ import {
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
-
 import Header from "@/components/Layout/Header/Navigation/Header";
 import Footer from "@/components/Layout/Footer";
 import ScrollToTop from "@/components/ScrollToTop";

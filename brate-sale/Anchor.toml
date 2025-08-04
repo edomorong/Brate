@@ -1,0 +1,12 @@
+[programs.localnet]
+brate_sale = "9FYgGhMtDihHt9192GuZr9PREB24zV5c5Pkpgb8FVRV5"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run mocha -t 1000000 tests/"

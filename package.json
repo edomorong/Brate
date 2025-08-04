@@ -9,11 +9,16 @@
     "lint": "next lint",
     "predeploy": "npm run build",
     "deploy": "touch out/.nojekyll && gh-pages -d out --dotfiles",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "initialize": "npx tsx scripts/initialize.ts",
+    "transfer": "npx tsx scripts/transfer-brate.ts",
+    "anchor:build": "anchor build",
+    "anchor:deploy": "anchor deploy"
   },
   "dependencies": {
     "@iconify/icons-ion": "^1.2.10",
     "@iconify/react": "^5.0.1",
+    "@project-serum/anchor": "0.26.0",
     "@solana/spl-token": "^0.4.13",
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-phantom": "^0.9.28",
@@ -21,16 +26,20 @@
     "@solana/wallet-adapter-react-ui": "^0.9.39",
     "@solana/wallet-adapter-wallets": "^0.19.37",
     "@solana/web3.js": "^1.98.2",
+    "@types/bn.js": "^5.2.0",
     "aos": "^2.3.4",
     "axios": "^1.7.2",
+    "bn.js": "^5.2.2",
     "bs58": "^5.0.0",
     "date-fns": "^3.4.0",
+    "dotenv": "^16.6.1",
     "framer-motion": "^11.11.9",
     "gray-matter": "^4.0.3",
     "next": "^14.2.3",
     "next-auth": "^4.24.7",
     "next-themes": "^0.4.6",
     "node-fetch": "^3.3.2",
+    "pino-pretty": "^13.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
@@ -41,7 +50,7 @@
   },
   "devDependencies": {
     "@types/aos": "^3.0.7",
-    "@types/node": "^20",
+    "@types/node": "^20.19.9",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-slick": "^0.23.13",
@@ -50,6 +59,39 @@
     "postcss": "^8.5.6",
     "prettier": "^3.2.5",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
-  }
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

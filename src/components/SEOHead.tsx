@@ -1,4 +1,3 @@
-// components/SEOHead.tsx
 import Head from "next/head";
 
 const SEOHead = () => (

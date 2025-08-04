@@ -1,10 +1,9 @@
-// src/pages/api/transfer-brate.ts
-import { NextApiRequest, NextApiResponse } from "next";
+/*
+import type { NextApiRequest, NextApiResponse } from "next";
 import {
   Connection,
   Keypair,
   PublicKey,
-  clusterApiUrl,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import {
@@ -12,18 +11,17 @@ import {
   transfer,
 } from "@solana/spl-token";
 
-// Dirección del token BRATE
-const BRATE_MINT = new PublicKey("4r8dy53x7MsMfkWkwQL23byJUd19ou1LRHRR68YWzHgS");
-const DECIMALS = 1_000_000; // Para 6 decimales
+// === VARIABLES SEGURAS DESDE .ENV ===
+const BRATE_MINT = new PublicKey(process.env.MINT_ADDRESS!);
+const SALE_WALLET = new PublicKey(process.env.SALE_WALLET!);
+const DECIMALS = 1_000_000; // 6 decimales (BRATE)
+const BRATE_PER_SOL = parseInt(process.env.BRATE_PER_SOL || "1500000", 10);
+const MAX_BRATE = parseInt(process.env.MAX_BRATE || "1000000", 10);
 
-// 🟡 Usa esta cuenta pública para verificar desde fuera:
-// https://solscan.io/account/7vPwgHYpdwXiqoRy25uAUat1WdH8CXdueVUTDbDkgiGF
-
-// 🔐 Leer PRIVATE_KEY del entorno
+// Obtener private key del backend
 function getPrivateKey(): Uint8Array {
   const secret = process.env.PRIVATE_KEY;
-  if (!secret) throw new Error("❌ PRIVATE_KEY no definida en el entorno");
-
+  if (!secret) throw new Error("❌ PRIVATE_KEY no definida en .env");
   try {
     return Uint8Array.from(JSON.parse(secret));
   } catch {
@@ -36,27 +34,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Método no permitido" });
   }
 
-  const { receiver, amount } = req.body;
+  const { receiver, amount, solTxSignature } = req.body;
 
+  // --- VALIDACIONES ---
   if (!receiver || typeof amount !== "number" || amount <= 0) {
-    return res.status(400).json({ error: "Parámetros inválidos: 'receiver' o 'amount'" });
+    return res.status(400).json({ error: "Parámetros inválidos" });
+  }
+  if (!solTxSignature) {
+    return res.status(400).json({ error: "Falta firma de transacción SOL" });
   }
 
   try {
-    const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
+    // Conectar a RPC
+    const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!, "confirmed");
+
+    // Confirmar transacción SOL
+    const latestBlock = await connection.getLatestBlockhash();
+    const confirmation = await connection.confirmTransaction(
+      {
+        signature: solTxSignature,
+        blockhash: latestBlock.blockhash,
+        lastValidBlockHeight: latestBlock.lastValidBlockHeight,
+      },
+      "confirmed"
+    );
+
+    if (confirmation.value?.err) {
+      return res.status(400).json({ error: "Transacción SOL fallida o no confirmada" });
+    }
+
+    // Calcular BRATE a enviar según cantidad de SOL
+    let brateAmount = amount * BRATE_PER_SOL;
+    if (brateAmount > MAX_BRATE) brateAmount = MAX_BRATE;
+
+    // Preparar keypair y cuentas
     const fromKeypair = Keypair.fromSecretKey(getPrivateKey());
     const fromWallet = fromKeypair.publicKey;
     const toWallet = new PublicKey(receiver);
 
-    // 1. Confirmar si tiene suficiente balance en SOL
+    // Verificar saldo del emisor
     const balance = await connection.getBalance(fromWallet);
     if (balance < 0.002 * LAMPORTS_PER_SOL) {
       return res.status(500).json({
-        error: "La cuenta de BRATE no tiene suficiente SOL para cubrir el gas",
+        error: "Cuenta emisora sin suficiente SOL para fees",
       });
     }
 
-    // 2. Obtener o crear cuentas SPL asociadas
+    // Cuentas asociadas
     const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       fromKeypair,
@@ -71,20 +95,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       toWallet
     );
 
-    // 3. Transferencia de tokens
+    // Transferir BRATE
     const signature = await transfer(
       connection,
       fromKeypair,
       fromTokenAccount.address,
       toTokenAccount.address,
       fromWallet,
-      amount * DECIMALS
+      brateAmount * DECIMALS
     );
 
-    console.log("✅ BRATE enviado:", signature);
-    res.status(200).json({ success: true, signature });
+    return res.status(200).json({
+      success: true,
+      signature,
+      solscan: `https://solscan.io/tx/${signature}`,
+      message: `${brateAmount.toLocaleString()} BRATE enviados a ${receiver}`,
+    });
   } catch (err: any) {
-    console.error("❌ Fallo la transferencia:", err?.message || err);
-    res.status(500).json({ error: "Transferencia fallida" });
+    console.error("❌ Error en transferencia:", err.message || err);
+    return res.status(500).json({
+      error: "Transferencia fallida",
+      details: err.message,
+    });
   }
 }
+*/
