@@ -10,21 +10,24 @@ import {
   createAssociatedTokenAccountInstruction,
   getAccount,
   transfer,
-  TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
-// --- Configuración desde .env ---
-const BRATE_MINT = new PublicKey(process.env.MINT_ADDRESS!);
-const DECIMALS = 1_000_000_000; // 9 decimales
-const BRATE_PER_SOL = parseInt(process.env.BRATE_PER_SOL || "15000", 10); // 0.01 SOL = 15,000 BRATE
-const HELIUS_API_KEY = process.env.NEXT_PUBLIC_HELIUS_API_KEY!;
+const mintAddress = process.env.MINT_ADDRESS;
+if (!mintAddress) {
+  throw new Error("MINT_ADDRESS no está configurado en variables de entorno");
+}
+const BRATE_MINT = new PublicKey(mintAddress);
+
+const DECIMALS = 1_000_000_000;
+const BRATE_PER_SOL = parseInt(process.env.BRATE_PER_SOL || "15000", 10);
+const HELIUS_API_KEY = process.env.HELIUS_API_KEY || "";
 
 function getPrivateKey(): Uint8Array {
   const arr = JSON.parse(process.env.PRIVATE_KEY || "[]");
   return Uint8Array.from(arr);
 }
 
-// --- Verificar número de holders ---
 async function getHoldersCount(): Promise<number> {
   try {
     const res = await fetch(
@@ -46,30 +49,25 @@ async function getHoldersCount(): Promise<number> {
 
 export async function POST(req: Request) {
   try {
-    const { buyer, solAmount } = await req.json();
+    const { buyer, solAmount } = (await req.json()) as {
+      buyer: string;
+      solAmount: number;
+    };
 
-    // Validaciones
     if (!buyer || typeof solAmount !== "number" || solAmount <= 0) {
       return NextResponse.json({ error: "Parámetros inválidos" }, { status: 400 });
     }
 
-    const connection = new Connection(
-      process.env.NEXT_PUBLIC_HELIUS_RPC!,
-      "confirmed"
-    );
+    const connection = new Connection(process.env.HELIUS_RPC!, "confirmed");
 
-    // Calcular tokens BRATE
-    let brateAmount = solAmount * BRATE_PER_SOL; // Ejemplo: 0.01 SOL -> 15,000
-
-    // Bono del 10% para los primeros 100 holders
+    let brateAmount = solAmount * BRATE_PER_SOL;
     const holdersCount = await getHoldersCount();
     if (holdersCount < 100) {
-      brateAmount *= 1.1; // 10% extra
+      brateAmount *= 1.1;
     }
 
-    const brateInSmallestUnit = Math.floor(brateAmount * DECIMALS); // en base 10^9
+    const brateInSmallestUnit = Math.floor(brateAmount * DECIMALS);
 
-    // Límite máximo
     const maxBrate = parseInt(process.env.MAX_BRATE || "1000000", 10);
     if (brateAmount > maxBrate) {
       return NextResponse.json(
@@ -82,16 +80,15 @@ export async function POST(req: Request) {
     const fromWallet = fromKeypair.publicKey;
     const buyerPubkey = new PublicKey(buyer);
 
-    // --- ATA del vendedor ---
     const fromATA = await getAssociatedTokenAddress(
       BRATE_MINT,
       fromWallet,
       false,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_PROGRAM_ID
     );
 
     try {
-      await getAccount(connection, fromATA, undefined, TOKEN_2022_PROGRAM_ID);
+      await getAccount(connection, fromATA, undefined, TOKEN_PROGRAM_ID);
     } catch {
       const tx = new Transaction().add(
         createAssociatedTokenAccountInstruction(
@@ -99,36 +96,34 @@ export async function POST(req: Request) {
           fromATA,
           fromWallet,
           BRATE_MINT,
-          TOKEN_2022_PROGRAM_ID
+          TOKEN_PROGRAM_ID
         )
       );
       await connection.sendTransaction(tx, [fromKeypair]);
     }
 
-    // --- ATA del comprador ---
     const toATA = await getAssociatedTokenAddress(
       BRATE_MINT,
       buyerPubkey,
       false,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_PROGRAM_ID
     );
 
     try {
-      await getAccount(connection, toATA, undefined, TOKEN_2022_PROGRAM_ID);
+      await getAccount(connection, toATA, undefined, TOKEN_PROGRAM_ID);
     } catch {
       const tx = new Transaction().add(
         createAssociatedTokenAccountInstruction(
-          fromWallet, // payer = wallet de venta
+          fromWallet,
           toATA,
           buyerPubkey,
           BRATE_MINT,
-          TOKEN_2022_PROGRAM_ID
+          TOKEN_PROGRAM_ID
         )
       );
       await connection.sendTransaction(tx, [fromKeypair]);
     }
 
-    // --- Transferencia de BRATE ---
     const sig = await transfer(
       connection,
       fromKeypair,
@@ -138,7 +133,7 @@ export async function POST(req: Request) {
       brateInSmallestUnit,
       [],
       undefined,
-      TOKEN_2022_PROGRAM_ID
+      TOKEN_PROGRAM_ID
     );
 
     return NextResponse.json({
@@ -149,10 +144,11 @@ export async function POST(req: Request) {
         holdersCount < 100 ? " (Incluye 10% bonus por ser de los primeros 100)" : ""
       }`,
     });
-  } catch (err: any) {
-    console.error("Error en buy-brate:", err);
+  } catch (err) {
+    const error = err as Error;
+    console.error("Error en buy-brate:", error);
     return NextResponse.json(
-      { error: err.message || "Error desconocido" },
+      { error: error.message || "Error desconocido" },
       { status: 500 }
     );
   }
