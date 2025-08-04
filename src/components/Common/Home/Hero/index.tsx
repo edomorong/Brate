@@ -12,6 +12,7 @@ import {
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
 
+// Evitar error de hidratación con WalletMultiButton
 const WalletMultiButton = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
   { ssr: false }
@@ -39,37 +40,31 @@ export default function Hero() {
   useEffect(() => setMounted(true), []);
 
   /**
-   * Obtiene métricas en tiempo real:
-   * - Total holders desde Birdeye
-   * - Circulating supply sumando balances (excluyendo la wallet de venta)
+   * Obtiene datos reales desde Solscan API
+   * - Holders: número actual de holders
+   * - Circulating Supply: supply actual en circulación
    */
   const fetchData = async () => {
     try {
+      // --- Holders desde Solscan ---
       const holdersRes = await fetch(
-        `https://public-api.birdeye.so/public/token/${TOKEN_ADDRESS}/holders`,
-        {
-          headers: {
-            accept: "application/json",
-            "x-chain": "solana",
-          },
-        }
+        `https://api.solscan.io/token/holders?tokenAddress=${TOKEN_ADDRESS}&limit=1`
       );
-
       const holdersData = await holdersRes.json();
-
-      // Número total de holders
-      const holderCount = holdersData?.data?.total_count || 0;
+      const holderCount = holdersData?.data?.total || 0;
       setHolders(holderCount);
 
-      // Suma balances para circulating (excluyendo SALE_WALLET)
-      const balances = holdersData?.data?.items || [];
-      const circulatingAmount = balances
-        .filter((h: any) => h.address !== SALE_WALLET)
-        .reduce((acc: number, h: any) => acc + Number(h.balance), 0);
-
-      setCirculating(circulatingAmount / Math.pow(10, 9)); // token usa 9 decimales
+      // --- Circulating Supply desde Solscan ---
+      const supplyRes = await fetch(
+        `https://api.solscan.io/token/meta?tokenAddress=${TOKEN_ADDRESS}`
+      );
+      const supplyData = await supplyRes.json();
+      const circSupply =
+        Number(supplyData?.data?.supply || 0) /
+        Math.pow(10, supplyData?.data?.decimals || 9);
+      setCirculating(circSupply);
     } catch (e) {
-      console.error("Error obteniendo métricas:", e);
+      console.error("Error obteniendo métricas desde Solscan:", e);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +72,7 @@ export default function Hero() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(fetchData, 30000); // cada 30s
     return () => clearInterval(interval);
   }, []);
 
