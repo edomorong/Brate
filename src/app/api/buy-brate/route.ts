@@ -13,15 +13,15 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
-const mintAddress = process.env.MINT_ADDRESS;
+const mintAddress = process.env.NEXT_PUBLIC_MINT_ADDRESS;
 if (!mintAddress) {
-  throw new Error("MINT_ADDRESS no está configurado en variables de entorno");
+  throw new Error("NEXT_PUBLIC_MINT_ADDRESS no está configurado en variables de entorno");
 }
 const BRATE_MINT = new PublicKey(mintAddress);
 
 const DECIMALS = 1_000_000_000;
 const BRATE_PER_SOL = parseInt(process.env.BRATE_PER_SOL || "15000", 10);
-const HELIUS_API_KEY = process.env.HELIUS_API_KEY || "";
+const HELIUS_API_KEY = process.env.NEXT_PUBLIC_HELIUS_API_KEY || "";
 
 function getPrivateKey(): Uint8Array {
   const arr = JSON.parse(process.env.PRIVATE_KEY || "[]");
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Parámetros inválidos" }, { status: 400 });
     }
 
-    const connection = new Connection(process.env.HELIUS_RPC!, "confirmed");
+    const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC!, "confirmed");
 
     let brateAmount = solAmount * BRATE_PER_SOL;
     const holdersCount = await getHoldersCount();
