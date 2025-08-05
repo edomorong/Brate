@@ -12,3 +12,10 @@ interface PhantomProvider {
 interface Window {
   solana?: PhantomProvider;
 }
+
+// Fix para errores de JSX: "JSX element implicitly has type 'any'"
+declare namespace JSX {
+  interface IntrinsicElements {
+    [elemName: string]: any;
+  }
+}
