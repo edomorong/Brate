@@ -276,7 +276,7 @@ export default function Hero() {
             className="lg:col-span-6 col-span-12 flex justify-center mt-10 lg:mt-0"
           >
             <Image
-              src="/images/hero/banner-image.png"
+              src="/images/hero/banner-image2.png"
               alt="BRATE Banner"
               width={600}
               height={600}
